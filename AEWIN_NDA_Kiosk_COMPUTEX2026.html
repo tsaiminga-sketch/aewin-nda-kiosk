@@ -1,0 +1,631 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>AEWIN NDA Kiosk — COMPUTEX 2026</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.19.0/dist/tabler-icons.min.css">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { height: 100%; overflow: hidden; background: #f5f5f3; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Noto Sans TC', sans-serif; }
+  :root {
+    --aewin-blue: #1B4B8A;
+    --aewin-blue-h: #163d73;
+    --aewin-orange: #F5A623;
+    --bg: #f5f5f3;
+    --surface: #ffffff;
+    --surface2: #f1efe8;
+    --border: rgba(0,0,0,0.12);
+    --border2: rgba(0,0,0,0.22);
+    --text: #1a1a18;
+    --text2: #5f5e5a;
+    --text3: #888780;
+    --success-bg: #eaf3de;
+    --success-text: #27500a;
+    --info-bg: #e6f1fb;
+    --info-text: #0c447c;
+    --warn-bg: #faeeda;
+    --warn-text: #633806;
+    --danger-bg: #fcebeb;
+    --danger-text: #791f1f;
+    --radius: 10px;
+    --radius-lg: 14px;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #1c1c1a; --surface: #2c2c2a; --surface2: #383836;
+      --border: rgba(255,255,255,0.12); --border2: rgba(255,255,255,0.22);
+      --text: #f1efe8; --text2: #b4b2a9; --text3: #888780;
+      --success-bg: #173404; --success-text: #c0dd97;
+      --info-bg: #042c53; --info-text: #b5d4f4;
+      --warn-bg: #412402; --warn-text: #fac775;
+      --danger-bg: #501313; --danger-text: #f7c1c1;
+    }
+  }
+
+  .app { width: 100%; height: 100%; overflow-y: auto; display: flex; flex-direction: column; }
+  .screen { display: none; flex: 1; flex-direction: column; }
+  .screen.active { display: flex; }
+
+  /* ── Language Screen ── */
+  #screen-lang {
+    align-items: center; justify-content: center; gap: 28px;
+    padding: 40px 24px; background: var(--bg);
+  }
+  .brand { text-align: center; }
+  .brand-name { font-size: 24px; font-weight: 600; color: var(--aewin-blue); letter-spacing: 0.5px; }
+  .brand-event { font-size: 13px; color: var(--text3); margin-top: 4px; letter-spacing: 1px; text-transform: uppercase; }
+  .brand-divider { width: 40px; height: 3px; background: var(--aewin-orange); border-radius: 2px; margin: 12px auto 0; }
+  .lang-prompt { font-size: 15px; color: var(--text2); text-align: center; }
+  .lang-btns { display: flex; gap: 16px; }
+  .lang-btn {
+    width: 160px; height: 110px; border-radius: var(--radius-lg);
+    border: 1.5px solid var(--border); background: var(--surface);
+    cursor: pointer; display: flex; flex-direction: column;
+    align-items: center; justify-content: center; gap: 8px;
+    transition: all 0.15s; color: var(--text);
+  }
+  .lang-btn:hover, .lang-btn:active { border-color: var(--aewin-blue); background: var(--info-bg); }
+  .lang-btn .flag { font-size: 34px; line-height: 1; }
+  .lang-btn .lang-name { font-size: 14px; font-weight: 500; }
+  .lang-note { font-size: 12px; color: var(--text3); text-align: center; max-width: 300px; line-height: 1.6; }
+
+  /* ── NDA Screen ── */
+  #screen-nda { padding: 16px; gap: 12px; background: var(--bg); overflow-y: auto; }
+  .nda-header { display: flex; align-items: center; justify-content: space-between; flex-shrink: 0; }
+  .nda-title { font-size: 16px; font-weight: 600; color: var(--aewin-blue); }
+  .tag { font-size: 11px; padding: 3px 10px; border-radius: 20px; font-weight: 500; }
+  .tag-blue { background: var(--info-bg); color: var(--info-text); }
+  .nda-scroll {
+    flex: 1; min-height: 240px; max-height: 340px; overflow-y: auto;
+    padding: 14px 16px; border: 0.5px solid var(--border); border-radius: var(--radius);
+    background: var(--surface); font-size: 13px; line-height: 1.8; color: var(--text);
+    -webkit-overflow-scrolling: touch;
+  }
+  .nda-scroll h3 { font-size: 13px; font-weight: 600; margin: 14px 0 4px; color: var(--aewin-blue); }
+  .nda-scroll p { margin-bottom: 8px; }
+  .nda-scroll ol { padding-left: 20px; margin-bottom: 8px; }
+  .nda-scroll li { margin-bottom: 4px; }
+  .nda-main-title { text-align: center; font-size: 15px; font-weight: 600; margin-bottom: 4px; }
+  .nda-sub-title { text-align: center; font-size: 12px; color: var(--text2); margin-bottom: 14px; line-height: 1.5; }
+  .scroll-hint { text-align: center; font-size: 12px; color: var(--text3); flex-shrink: 0; }
+  .agree-row {
+    display: flex; align-items: center; gap: 12px;
+    padding: 12px 14px; border-radius: var(--radius); background: var(--surface2); flex-shrink: 0;
+  }
+  .agree-row input[type=checkbox] { width: 22px; height: 22px; cursor: pointer; accent-color: var(--aewin-blue); flex-shrink: 0; }
+  .agree-row label { font-size: 14px; font-weight: 500; cursor: pointer; color: var(--text); line-height: 1.4; }
+
+  /* ── Form Screen ── */
+  #screen-form { padding: 16px; gap: 12px; background: var(--bg); overflow-y: auto; }
+  .form-header { font-size: 16px; font-weight: 600; color: var(--aewin-blue); flex-shrink: 0; padding-bottom: 10px; border-bottom: 0.5px solid var(--border); }
+  .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  .form-group { display: flex; flex-direction: column; gap: 5px; }
+  .form-group.full { grid-column: 1/-1; }
+  .form-group label { font-size: 12px; font-weight: 600; color: var(--text2); text-transform: uppercase; letter-spacing: 0.5px; }
+  .form-group input {
+    padding: 11px 13px; border-radius: var(--radius); border: 0.5px solid var(--border2);
+    background: var(--surface); font-size: 15px; color: var(--text);
+    -webkit-appearance: none; outline: none;
+  }
+  .form-group input:focus { border-color: var(--aewin-blue); box-shadow: 0 0 0 3px rgba(27,75,138,0.15); }
+  .sig-section { display: flex; flex-direction: column; gap: 6px; flex-shrink: 0; }
+  .sig-label { font-size: 12px; font-weight: 600; color: var(--text2); text-transform: uppercase; letter-spacing: 0.5px; }
+  .sig-wrap { position: relative; border: 0.5px solid var(--border2); border-radius: var(--radius); background: var(--surface); overflow: hidden; }
+  #sig-canvas { display: block; width: 100%; height: 130px; cursor: crosshair; touch-action: none; }
+  .sig-ph { position: absolute; top: 50%; left: 50%; transform: translate(-50%,-50%); font-size: 13px; color: var(--text3); pointer-events: none; user-select: none; }
+  .sig-actions { display: flex; justify-content: flex-end; }
+
+  /* ── Buttons ── */
+  .btn {
+    padding: 13px 20px; border-radius: var(--radius); border: none;
+    font-size: 15px; font-weight: 500; cursor: pointer; transition: all 0.15s;
+    display: flex; align-items: center; justify-content: center; gap: 6px;
+  }
+  .btn-primary { background: var(--aewin-blue); color: #fff; }
+  .btn-primary:hover, .btn-primary:active { background: var(--aewin-blue-h); }
+  .btn-primary:disabled { background: var(--border); color: var(--text3); cursor: not-allowed; }
+  .btn-ghost { background: transparent; color: var(--text2); border: 0.5px solid var(--border2); }
+  .btn-ghost:hover { background: var(--surface2); }
+  .btn-sm { padding: 7px 14px; font-size: 13px; border-radius: 8px; }
+  .btn-row { display: flex; gap: 10px; flex-shrink: 0; }
+  .btn-row .btn-primary { flex: 1; }
+
+  /* ── Success Screen ── */
+  #screen-success {
+    align-items: center; justify-content: center; gap: 20px;
+    padding: 40px 24px; background: var(--bg); text-align: center; overflow-y: auto;
+  }
+  .success-icon { width: 76px; height: 76px; border-radius: 50%; background: var(--success-bg); display: flex; align-items: center; justify-content: center; }
+  .success-icon i { font-size: 38px; color: var(--success-text); }
+  .success-title { font-size: 22px; font-weight: 600; color: var(--text); }
+  .success-sub { font-size: 14px; color: var(--text2); max-width: 340px; line-height: 1.65; }
+  .info-box { background: var(--surface); border: 0.5px solid var(--border); border-radius: var(--radius-lg); padding: 14px 18px; width: 100%; max-width: 400px; }
+  .info-row { display: flex; justify-content: space-between; align-items: center; padding: 7px 0; border-bottom: 0.5px solid var(--border); font-size: 13px; }
+  .info-row:last-child { border-bottom: none; }
+  .info-row .key { color: var(--text2); }
+  .info-row .val { font-weight: 500; color: var(--text); max-width: 200px; text-align: right; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .countdown-wrap { width: 100%; max-width: 400px; }
+  .countdown-txt { font-size: 13px; color: var(--text3); margin-bottom: 6px; }
+  .progress-track { height: 4px; border-radius: 2px; background: var(--border); overflow: hidden; }
+  .progress-fill { height: 100%; background: var(--aewin-blue); width: 100%; transition: width 0.1s linear; }
+
+  /* ── Admin Login ── */
+  #screen-admin-login { align-items: center; justify-content: center; padding: 40px 24px; background: var(--bg); }
+  .login-card { background: var(--surface); border: 0.5px solid var(--border); border-radius: var(--radius-lg); padding: 28px 24px; width: 100%; max-width: 360px; display: flex; flex-direction: column; gap: 14px; }
+  .login-title { font-size: 18px; font-weight: 600; color: var(--text); }
+  .login-sub { font-size: 13px; color: var(--text2); margin-top: -6px; }
+  .err-msg { font-size: 13px; color: var(--danger-text); background: var(--danger-bg); padding: 8px 12px; border-radius: 8px; display: none; }
+
+  /* ── Admin Dashboard ── */
+  #screen-admin { padding: 16px; gap: 12px; background: var(--bg); overflow-y: auto; }
+  .admin-header { display: flex; align-items: flex-start; justify-content: space-between; flex-shrink: 0; }
+  .admin-title-block { display: flex; flex-direction: column; gap: 3px; }
+  .admin-title { font-size: 17px; font-weight: 600; color: var(--aewin-blue); }
+  .record-count { font-size: 13px; color: var(--text2); }
+  .tag-admin { background: var(--warn-bg); color: var(--warn-text); }
+  .records-list { display: flex; flex-direction: column; gap: 8px; flex: 1; overflow-y: auto; min-height: 0; }
+  .rec-card { padding: 11px 13px; border-radius: var(--radius); border: 0.5px solid var(--border); background: var(--surface); display: flex; align-items: center; gap: 11px; }
+  .rec-avatar { width: 38px; height: 38px; border-radius: 50%; background: var(--info-bg); color: var(--info-text); display: flex; align-items: center; justify-content: center; font-size: 13px; font-weight: 600; flex-shrink: 0; }
+  .rec-info { flex: 1; min-width: 0; }
+  .rec-name { font-size: 14px; font-weight: 500; color: var(--text); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .rec-meta { font-size: 12px; color: var(--text2); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .rec-sig { width: 56px; height: 28px; border-radius: 6px; border: 0.5px solid var(--border); background: var(--surface2); flex-shrink: 0; object-fit: contain; }
+  .admin-actions { display: flex; gap: 8px; flex-wrap: wrap; flex-shrink: 0; }
+  .admin-footer { font-size: 11px; color: var(--text3); text-align: center; flex-shrink: 0; }
+  .empty-state { text-align: center; padding: 48px 20px; color: var(--text2); font-size: 14px; display: flex; flex-direction: column; align-items: center; gap: 10px; }
+  .empty-state i { font-size: 32px; color: var(--text3); }
+
+  /* ── Admin trigger ── */
+  .admin-trigger { position: fixed; bottom: 10px; right: 10px; width: 30px; height: 30px; cursor: pointer; opacity: 0.12; display: flex; align-items: center; justify-content: center; border-radius: 50%; }
+  .admin-trigger:hover { opacity: 0.4; background: var(--surface2); }
+
+  /* ── Toast ── */
+  .toast { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); background: #2c2c2a; color: #f1efe8; font-size: 13px; padding: 10px 20px; border-radius: 8px; white-space: nowrap; z-index: 9999; display: none; box-shadow: 0 4px 16px rgba(0,0,0,0.2); }
+
+  @media (max-width: 480px) {
+    .lang-btns { gap: 12px; }
+    .lang-btn { width: 140px; height: 100px; }
+    .form-grid { grid-template-columns: 1fr; }
+    .form-group.full { grid-column: 1; }
+  }
+</style>
+</head>
+<body>
+<div class="app">
+
+  <!-- Screen: Language -->
+  <div id="screen-lang" class="screen active">
+    <div class="brand">
+      <div class="brand-name">AEWIN Technologies</div>
+      <div class="brand-event">Computex 2026 · NDA Room</div>
+      <div class="brand-divider"></div>
+    </div>
+    <p class="lang-prompt">請選擇語言 / Please select language</p>
+    <div class="lang-btns">
+      <button class="lang-btn" onclick="selectLang('zh')">
+        <span class="flag">🇹🇼</span>
+        <span class="lang-name">繁體中文</span>
+      </button>
+      <button class="lang-btn" onclick="selectLang('en')">
+        <span class="flag">🇺🇸</span>
+        <span class="lang-name">English</span>
+      </button>
+    </div>
+    <p class="lang-note">進入展示室前，請先閱讀並簽署保密切結書<br>Please read and sign the NDA before entering the demo room</p>
+  </div>
+
+  <!-- Screen: NDA -->
+  <div id="screen-nda" class="screen">
+    <div class="nda-header">
+      <span class="nda-title" id="nda-title-text">訪客保密切結書</span>
+      <span class="tag tag-blue" id="nda-lang-tag">繁體中文</span>
+    </div>
+    <div class="nda-scroll" id="nda-content"></div>
+    <div class="scroll-hint" id="scroll-hint">↓ 請向下捲動閱讀完整條款</div>
+    <div class="agree-row">
+      <input type="checkbox" id="agree-check" onchange="toggleAgree()">
+      <label for="agree-check" id="agree-label">我已閱讀並同意以上所有條款</label>
+    </div>
+    <button class="btn btn-primary" id="btn-to-form" disabled onclick="goToForm()">
+      <span id="btn-to-form-txt">繼續填寫資料 →</span>
+    </button>
+    <button class="btn btn-ghost" onclick="showScreen('lang')">
+      <i class="ti ti-arrow-left"></i> <span id="btn-back-nda">返回語言選擇</span>
+    </button>
+  </div>
+
+  <!-- Screen: Form -->
+  <div id="screen-form" class="screen">
+    <div class="form-header" id="form-header">訪客資料 &amp; 簽名</div>
+    <div class="form-grid">
+      <div class="form-group">
+        <label id="lbl-name">姓名 *</label>
+        <input type="text" id="inp-name" autocomplete="off" autocorrect="off" spellcheck="false">
+      </div>
+      <div class="form-group">
+        <label id="lbl-company">公司名稱 *</label>
+        <input type="text" id="inp-company" autocomplete="off" autocorrect="off" spellcheck="false">
+      </div>
+      <div class="form-group">
+        <label id="lbl-title">職稱</label>
+        <input type="text" id="inp-jobtitle" autocomplete="off" spellcheck="false">
+      </div>
+      <div class="form-group">
+        <label id="lbl-email">Email / 電話</label>
+        <input type="text" id="inp-email" autocomplete="off" autocorrect="off" spellcheck="false">
+      </div>
+    </div>
+    <div class="sig-section">
+      <div class="sig-label" id="lbl-sig">手寫簽名 *</div>
+      <div class="sig-wrap">
+        <canvas id="sig-canvas"></canvas>
+        <div class="sig-ph" id="sig-ph">在此手寫簽名 / Sign here</div>
+      </div>
+      <div class="sig-actions">
+        <button class="btn btn-ghost btn-sm" onclick="clearSig()" id="btn-clear">清除簽名</button>
+      </div>
+    </div>
+    <div class="btn-row">
+      <button class="btn btn-ghost" style="flex:0 0 80px;" onclick="showScreen('nda')">
+        <i class="ti ti-arrow-left"></i>
+      </button>
+      <button class="btn btn-primary" id="btn-submit" onclick="submitForm()">
+        <span id="btn-submit-txt">確認送出並簽署</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- Screen: Success -->
+  <div id="screen-success" class="screen">
+    <div class="success-icon"><i class="ti ti-check"></i></div>
+    <div class="success-title" id="success-title">簽署完成！</div>
+    <div class="success-sub" id="success-sub">感謝您的配合。歡迎進入 AEWIN 非公開產品展示室。</div>
+    <div class="info-box" id="success-info"></div>
+    <div class="countdown-wrap">
+      <div class="countdown-txt" id="countdown-txt">10 秒後自動返回</div>
+      <div class="progress-track"><div class="progress-fill" id="progress-fill"></div></div>
+    </div>
+    <button class="btn btn-primary" style="width:100%;max-width:400px;" onclick="resetKiosk()" id="btn-next">下一位訪客</button>
+  </div>
+
+  <!-- Screen: Admin Login -->
+  <div id="screen-admin-login" class="screen">
+    <div class="login-card">
+      <div>
+        <div class="login-title">後台管理</div>
+        <div class="login-sub">請輸入管理員密碼</div>
+      </div>
+      <div class="form-group">
+        <label>密碼</label>
+        <input type="password" id="admin-pw" placeholder="••••••••" onkeydown="if(event.key==='Enter')checkLogin()">
+      </div>
+      <div class="err-msg" id="login-err">密碼錯誤，請重試</div>
+      <button class="btn btn-primary" onclick="checkLogin()">登入後台</button>
+      <button class="btn btn-ghost" onclick="showScreen('lang')">取消</button>
+    </div>
+  </div>
+
+  <!-- Screen: Admin Dashboard -->
+  <div id="screen-admin" class="screen">
+    <div class="admin-header">
+      <div class="admin-title-block">
+        <div class="admin-title">簽署紀錄</div>
+        <div class="record-count" id="rec-count">載入中...</div>
+      </div>
+      <span class="tag tag-admin">管理員</span>
+    </div>
+    <div class="records-list" id="records-list"></div>
+    <div class="admin-actions">
+      <button class="btn btn-ghost btn-sm" onclick="exportCSV()"><i class="ti ti-download"></i> 匯出 CSV</button>
+      <button class="btn btn-primary btn-sm" onclick="emailSummary()"><i class="ti ti-mail"></i> 寄送給 Ming</button>
+      <button class="btn btn-ghost btn-sm" style="margin-left:auto;" onclick="showScreen('lang')"><i class="ti ti-door-exit"></i> 離開</button>
+    </div>
+    <div class="admin-footer">所有紀錄儲存於本裝置瀏覽器 · 匯出 CSV 後請妥善備份</div>
+  </div>
+
+</div>
+
+<!-- Admin trigger (hidden) -->
+<div class="admin-trigger" onclick="showScreen('admin-login')" title="Admin">
+  <i class="ti ti-settings" style="font-size:16px;color:currentColor;"></i>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+const ADMIN_PW = 'aewin168';
+const ADMIN_EMAIL = 'ming_tsai@aewin.com';
+let lang = 'zh';
+let sigCtx = null, sigDrawing = false, sigHasData = false;
+let cdTimer = null;
+
+const T = {
+  zh: {
+    ndaTitle:'訪客保密切結書', ndaTag:'繁體中文',
+    agreeLabel:'我已閱讀並同意以上所有條款',
+    btnToForm:'繼續填寫資料 →', btnBackNda:'返回語言選擇',
+    formHeader:'訪客資料 & 簽名',
+    lName:'姓名 *', lCompany:'公司名稱 *', lTitle:'職稱', lEmail:'Email / 電話',
+    lSig:'手寫簽名 *', btnClear:'清除簽名', btnSubmit:'確認送出並簽署',
+    scrollHint:'↓ 請向下捲動閱讀完整條款',
+    successTitle:'簽署完成！',
+    successSub:'感謝您的配合。歡迎進入 AEWIN 非公開產品展示室。',
+    btnNext:'下一位訪客',
+    errName:'請填寫姓名', errCompany:'請填寫公司名稱', errSig:'請完成手寫簽名',
+    ph:['姓名','公司名稱','職稱','email@company.com'],
+    sigPh:'在此手寫簽名 / Sign here',
+    cdPrefix:'秒後自動返回',
+    kName:'姓名', kCompany:'公司', kTime:'簽署時間', kLang:'語言版本',
+  },
+  en: {
+    ndaTitle:'Visitor Confidentiality Agreement', ndaTag:'English',
+    agreeLabel:'I have read and agree to all terms above',
+    btnToForm:'Continue to Sign →', btnBackNda:'Back to language',
+    formHeader:'Visitor Information & Signature',
+    lName:'Name *', lCompany:'Company *', lTitle:'Title', lEmail:'Email / Phone',
+    lSig:'Handwritten Signature *', btnClear:'Clear', btnSubmit:'Confirm & Sign',
+    scrollHint:'↓ Scroll down to read full agreement',
+    successTitle:'Signed Successfully!',
+    successSub:'Thank you. You are now permitted to enter the AEWIN Private Product Demo Room.',
+    btnNext:'Next Visitor',
+    errName:'Please enter your name', errCompany:'Please enter your company', errSig:'Please provide your signature',
+    ph:['Full Name','Company','Title','email@company.com'],
+    sigPh:'Sign here',
+    cdPrefix:'s — returning automatically',
+    kName:'Name', kCompany:'Company', kTime:'Signed at', kLang:'Language',
+  }
+};
+
+const NDA_ZH = `<div class="nda-main-title">訪客保密切結書</div>
+<div class="nda-sub-title">Computex 2026 期間進入其陽科技股份有限公司非公開產品展示室之訪客專用</div>
+<p>本訪客保密切結書（以下稱「本切結書」）係由下列簽署之訪客（以下稱「訪客」）為保護其陽科技股份有限公司（英文名稱：AEWIN Technologies Co., Ltd.）（以下稱「本公司」、「其陽」或「AEWIN」）機密資訊之目的所簽署，自訪客簽署之日起生效。</p>
+<p>茲因訪客將於 Computex 2026 期間，依預約並經管制進出之方式，獲准進入其陽所設之非公開產品展示室，接觸由其陽所揭露、展示或提供之特定非公開資訊，訪客爰同意遵守下列條款：</p>
+<h3>第 1 條　目的</h3><p>訪客進入其陽非公開產品展示室，僅得以評估、了解或討論其陽所揭露之非公開產品、技術、展示內容、簡報、規格、原型、產品規劃配置圖及相關資訊，作為潛在商務合作或內部評估之用。除本切結書明文允許者外，訪客不得將相關資訊用作其他用途。</p>
+<h3>第 2 條　機密資訊之定義</h3><p>本切結書所稱「機密資訊」，係指其陽或其代表於非公開產品展示室內，以口頭、視覺、書面、電子、圖像、實體、樣品或其他任何形式，向訪客揭露之一切非公開資訊，包括但不限於：</p><ol><li>產品資訊、產品計畫及產品規劃配置圖；</li><li>尚未發布或未對外公開之技術規格、功能、特性、配置、設計、架構、電路圖、效能資料、基準測試結果及測試數據；</li><li>原型、樣品、展示資料、簡報資料及工程技術資訊；</li><li>商務、上市、行銷、定價、客戶、合作夥伴或供應商相關資訊；</li><li>其他經標示為機密，或依一般商業合理判斷足認應屬機密性質之資訊。</li></ol>
+<h3>第 3 條　保密義務</h3><p>訪客就機密資訊應：（一）善盡保密義務，對所有機密資訊嚴予保密；（二）非經其陽事前書面同意，不得以任何方式向任何第三人揭露；（三）不得將機密資訊使用於與其陽潛在商務合作無關之任何目的；（四）僅得於其內部對確有知悉必要之人員揭露機密資訊，且該等人員須受不低於本切結書保護程度之保密義務拘束；（五）應採取合理注意措施，以防止機密資訊遭未經授權之使用、洩漏或接觸。</p>
+<h3>第 4 條　禁止拍攝、錄製、截取及作成記錄</h3><p>訪客於非公開產品展示室內，不得：（一）拍攝照片；（二）進行任何形式之錄音或錄影；（三）擷取螢幕畫面或影像；（四）以電子、機械、手寫或其他任何方式，掃描、複製、下載、摘錄、摘要、繪製草圖、做成筆記，或以其他方式重製、保存或製作任何展示或提供資料之紀錄；（五）以直播、播送、傳輸或其他方式對外傳送任何內容。</p>
+<h3>第 5 條　禁止對外揭露或傳達</h3><p>非經其陽事前書面同意，訪客不得向任何外部第三人，或透過任何公開或非公開之溝通管道（包括社群媒體、網站、部落格、論壇、通訊軟體、媒體、分析師往來等），揭露、討論、描述、摘要或以其他方式傳達任何機密資訊，包括任何未公開或尚未發布之技術規格。</p>
+<h3>第 6 條　例外情形</h3><p>如訪客得以書面證明有下列情形之一者，本切結書所定保密義務不適用：（一）於其陽揭露前，訪客即已合法知悉者；（二）非因訪客違反本切結書而成為公開資訊者；（三）訪客係自未違反保密義務之第三人處合法取得者；（四）訪客未使用機密資訊而獨立開發取得者。</p>
+<h3>第 7 條　依法令或主管機關要求揭露</h3><p>如訪客因法令、法院命令或主管機關要求而有揭露機密資訊之必要時，應於法律許可範圍內，儘速事前以書面通知其陽，並僅得於法令要求之最小必要範圍內為揭露。</p>
+<h3>第 8 條　權利歸屬</h3><p>所有機密資訊及其相關權利，均屬其陽及／或其權利人所有。除本切結書明定之特定目的外，其陽就機密資訊之揭露，不應解釋為對訪客授與任何明示或默示之授權、所有權或其他智慧財產權。</p>
+<h3>第 9 條　保密期間</h3><p>本切結書自訪客簽署之日起生效，並於其後<strong>五（5）年</strong>內持續有效。惟就依法構成營業秘密之資訊或任何非公開技術資訊（包括但不限於未發布之技術規格、配置、設計、架構、效能資料、基準測試結果、測試數據及工程技術資訊），訪客之保密義務應持續至該等資訊不再具非公開性及機密性時為止；但如其陽事前以書面明示解除者，不在此限。</p>
+<h3>第 10 條　違約責任及救濟</h3><p>訪客明知並同意，違反本切結書之行為，可能對其陽造成難以回復或難以金錢衡量之損害，故除損害賠償外，其陽並得依適用法律請求假處分、定暫時狀態處分、禁制令、特定履行或其他適當救濟。</p>
+<h3>第 11 條　無揭露或交易義務</h3><p>本切結書之簽署，不構成其陽有義務向訪客揭露任何特定資訊，亦不構成其陽有義務與訪客建立任何進一步之商業關係、合作或交易。</p>
+<h3>第 12 條　準據法及管轄法院</h3><p>本切結書之解釋、效力、履行及因本切結書所生之一切爭議，均以中華民國法律為準據法。因本切結書所生之一切爭議，雙方同意以臺灣臺北地方法院為第一審專屬管轄法院。</p>
+<h3>第 13 條　完整合意</h3><p>本切結書構成雙方就本切結書標的事項之完整合意，並取代雙方先前就相同事項所為之一切口頭或書面討論、協商、表示、理解或約定。</p>
+<h3>第 14 條　語言</h3><p>本切結書以繁體中文及英文作成；如中英文版本之內容有任何歧異或不一致之處，以繁體中文版本為準。</p>`;
+
+const NDA_EN = `<div class="nda-main-title">Visitor Confidentiality Agreement</div>
+<div class="nda-sub-title">for Access to AEWIN's Private Product Demo Room during Computex 2026</div>
+<p>This Visitor Confidentiality Agreement (the "Agreement") is made by the undersigned visitor (the "Visitor") in favor of AEWIN Technologies Co., Ltd. ("AEWIN") and becomes effective as of the date of the Visitor's signature below.</p>
+<p>In consideration of being granted access to AEWIN's Private Product Demo Room during Computex 2026 on a pre-arranged and controlled-entry basis, the Visitor agrees as follows:</p>
+<h3>1. Purpose</h3><p>AEWIN may grant the Visitor access to AEWIN's Private Product Demo Room solely for the purpose of reviewing certain non-public products, technologies, demonstrations, presentations, specifications, prototypes, roadmaps, and related information disclosed by or on behalf of AEWIN.</p>
+<h3>2. Confidential Information</h3><p>"Confidential Information" means any non-public information disclosed, shown, presented, demonstrated, or otherwise made available to the Visitor by or on behalf of AEWIN in or in connection with the Private Product Demo Room, whether in oral, visual, written, electronic, graphic, physical, sample, or any other form, including without limitation: (a) product information, product plans, and product roadmaps; (b) unreleased or non-public technical specifications, features, functions, configurations, designs, architecture, schematics, performance data, benchmarks, and test results; (c) prototypes, samples, demonstration materials, presentation materials, and engineering information; (d) business, launch, marketing, pricing, customer, partner, or supplier-related information; (e) any other information identified as confidential, or that reasonably should be understood to be confidential in light of the circumstances.</p>
+<h3>3. Confidentiality Obligations</h3><p>The Visitor shall: (a) keep all Confidential Information strictly confidential; (b) not disclose, publish, release, reproduce, summarize, transmit, or otherwise make available any Confidential Information to any third party without AEWIN's prior written consent; (c) not use any Confidential Information for any purpose other than internal evaluation in connection with potential business discussions or cooperation with AEWIN; (d) limit access to the Confidential Information to those personnel who have a strict need to know and who are bound by confidentiality obligations no less protective than those set forth herein.</p>
+<h3>4. No Photography, Recording, Capture, or Note-Taking</h3><p>The Visitor shall not, within the Private Product Demo Room or with respect to any Confidential Information: (a) take photographs; (b) make any video or audio recording; (c) capture screenshots or images; (d) scan, copy, download, extract, summarize, sketch, take notes, or otherwise reproduce, retain, or create any record of any displayed or provided material, whether by electronic, mechanical, or manual means; (e) livestream, broadcast, or otherwise transmit any content.</p>
+<h3>5. No External Disclosure</h3><p>The Visitor shall not disclose, discuss, describe, summarize, or otherwise communicate any Confidential Information to any external party or through any public or private communication channel, including without limitation social media, websites, blogs, forums, messaging applications, press communications, analyst communications, or other media, without AEWIN's prior written consent.</p>
+<h3>6. Exceptions</h3><p>The obligations under this Agreement shall not apply to information that the Visitor can demonstrate by written evidence: (a) was lawfully known to the Visitor prior to disclosure by AEWIN; (b) becomes publicly available through no breach of this Agreement by the Visitor; (c) is lawfully obtained by the Visitor from a third party without breach of any confidentiality obligation; or (d) is independently developed by the Visitor without use of or reference to the Confidential Information.</p>
+<h3>7. Required Disclosure</h3><p>If the Visitor is required by applicable law, regulation, court order, or governmental authority to disclose any Confidential Information, the Visitor shall, to the extent legally permitted, promptly notify AEWIN in writing before making such disclosure and shall disclose only the minimum portion of the Confidential Information legally required.</p>
+<h3>8. Ownership</h3><p>All Confidential Information shall remain the sole property of AEWIN and/or the respective rights holder. No license, ownership right, or other intellectual property right is granted to the Visitor by virtue of this Agreement or the disclosure of any Confidential Information.</p>
+<h3>9. Term</h3><p>This Agreement shall become effective upon the Visitor's signature and shall remain in effect for <strong>five (5) years</strong> thereafter; provided, however, that with respect to any Confidential Information constituting a trade secret or any non-public technical information, including without limitation unreleased technical specifications, configurations, designs, architecture, performance data, benchmarks, test results, and engineering information, the Visitor's confidentiality and non-disclosure obligations shall continue for so long as such information remains non-public and confidential, unless AEWIN expressly releases the Visitor from such obligations by prior written notice.</p>
+<h3>10. Remedies</h3><p>The Visitor acknowledges that any breach of this Agreement may cause irreparable harm to AEWIN, for which monetary damages alone may be inadequate. Accordingly, AEWIN shall be entitled to seek injunctive relief, specific performance, and any other remedies available under applicable law.</p>
+<h3>11. No Obligation to Disclose</h3><p>Nothing in this Agreement obligates AEWIN to disclose any particular information to the Visitor or to enter into any further business relationship, transaction, or agreement with the Visitor.</p>
+<h3>12. Governing Law and Jurisdiction</h3><p>This Agreement shall be governed by and construed in accordance with the laws of the Republic of China (Taiwan), without regard to its conflict of law principles. Any dispute arising out of or in connection with this Agreement shall be submitted to the exclusive jurisdiction of the Taiwan Taipei District Court as the court of first instance.</p>
+<h3>13. Entire Agreement</h3><p>This Agreement constitutes the entire agreement with respect to the subject matter hereof and supersedes all prior oral or written discussions, understandings, or communications relating to such subject matter.</p>
+<h3>14. Language</h3><p>This agreement is made in both Traditional Chinese and English. In the event of any discrepancy or inconsistency between the two versions, the Traditional Chinese version shall prevail.</p>`;
+
+function showScreen(name) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById('screen-' + name).classList.add('active');
+}
+
+function selectLang(l) {
+  lang = l;
+  const t = T[l];
+  document.getElementById('nda-title-text').textContent = t.ndaTitle;
+  document.getElementById('nda-lang-tag').textContent = t.ndaTag;
+  document.getElementById('agree-label').textContent = t.agreeLabel;
+  document.getElementById('btn-to-form').textContent = t.btnToForm;
+  document.getElementById('btn-back-nda').textContent = t.btnBackNda;
+  document.getElementById('form-header').textContent = t.formHeader;
+  document.getElementById('lbl-name').textContent = t.lName;
+  document.getElementById('lbl-company').textContent = t.lCompany;
+  document.getElementById('lbl-title').textContent = t.lTitle;
+  document.getElementById('lbl-email').textContent = t.lEmail;
+  document.getElementById('lbl-sig').textContent = t.lSig;
+  document.getElementById('btn-clear').textContent = t.btnClear;
+  document.getElementById('btn-submit-txt').textContent = t.btnSubmit;
+  document.getElementById('scroll-hint').textContent = t.scrollHint;
+  document.getElementById('inp-name').placeholder = t.ph[0];
+  document.getElementById('inp-company').placeholder = t.ph[1];
+  document.getElementById('inp-jobtitle').placeholder = t.ph[2];
+  document.getElementById('inp-email').placeholder = t.ph[3];
+  document.getElementById('sig-ph').textContent = t.sigPh;
+  document.getElementById('btn-next').textContent = t.btnNext;
+  document.getElementById('agree-check').checked = false;
+  document.getElementById('btn-to-form').disabled = true;
+  document.getElementById('nda-content').innerHTML = l === 'zh' ? NDA_ZH : NDA_EN;
+  showScreen('nda');
+  setTimeout(() => document.getElementById('nda-content').scrollTop = 0, 50);
+}
+
+function toggleAgree() {
+  document.getElementById('btn-to-form').disabled = !document.getElementById('agree-check').checked;
+}
+
+function goToForm() {
+  ['inp-name','inp-company','inp-jobtitle','inp-email'].forEach(id => document.getElementById(id).value = '');
+  showScreen('form');
+  setTimeout(initCanvas, 80);
+}
+
+function initCanvas() {
+  const c = document.getElementById('sig-canvas');
+  const w = c.parentElement.clientWidth;
+  c.width = w; c.height = 130;
+  sigCtx = c.getContext('2d');
+  sigCtx.strokeStyle = '#1B4B8A';
+  sigCtx.lineWidth = 2.2;
+  sigCtx.lineCap = 'round';
+  sigCtx.lineJoin = 'round';
+  sigHasData = false;
+  document.getElementById('sig-ph').style.display = 'block';
+
+  const pos = (e) => {
+    const r = c.getBoundingClientRect();
+    const src = e.touches ? e.touches[0] : e;
+    return [src.clientX - r.left, src.clientY - r.top];
+  };
+  c.onmousedown = (e) => { sigDrawing = true; const [x,y] = pos(e); sigCtx.beginPath(); sigCtx.moveTo(x,y); hidePh(); };
+  c.onmousemove = (e) => { if (!sigDrawing) return; const [x,y] = pos(e); sigCtx.lineTo(x,y); sigCtx.stroke(); };
+  c.onmouseup = c.onmouseleave = () => { if (sigDrawing) { sigDrawing = false; sigHasData = true; } };
+  c.ontouchstart = (e) => { e.preventDefault(); sigDrawing = true; const [x,y] = pos(e); sigCtx.beginPath(); sigCtx.moveTo(x,y); hidePh(); };
+  c.ontouchmove = (e) => { e.preventDefault(); if (!sigDrawing) return; const [x,y] = pos(e); sigCtx.lineTo(x,y); sigCtx.stroke(); };
+  c.ontouchend = () => { sigDrawing = false; sigHasData = true; };
+}
+
+function hidePh() { document.getElementById('sig-ph').style.display = 'none'; }
+
+function clearSig() {
+  if (sigCtx) { const c = document.getElementById('sig-canvas'); sigCtx.clearRect(0,0,c.width,c.height); }
+  sigHasData = false;
+  document.getElementById('sig-ph').style.display = 'block';
+}
+
+function getRecords() {
+  try { return JSON.parse(localStorage.getItem('aewin_nda_v1') || '[]'); } catch { return []; }
+}
+
+function submitForm() {
+  const t = T[lang];
+  const name = document.getElementById('inp-name').value.trim();
+  const company = document.getElementById('inp-company').value.trim();
+  if (!name) { toast(t.errName); return; }
+  if (!company) { toast(t.errCompany); return; }
+  if (!sigHasData) { toast(t.errSig); return; }
+
+  const now = new Date();
+  const dateStr = now.toLocaleDateString('zh-TW');
+  const timeStr = now.toLocaleTimeString('zh-TW', {hour:'2-digit', minute:'2-digit'});
+  const rec = {
+    id: now.getTime(),
+    timestamp: now.toISOString(),
+    date: dateStr, time: timeStr,
+    name, company,
+    jobtitle: document.getElementById('inp-jobtitle').value.trim(),
+    email: document.getElementById('inp-email').value.trim(),
+    lang,
+    sig: document.getElementById('sig-canvas').toDataURL('image/png')
+  };
+  const recs = getRecords();
+  recs.push(rec);
+  localStorage.setItem('aewin_nda_v1', JSON.stringify(recs));
+  showSuccess(rec);
+}
+
+function showSuccess(rec) {
+  const t = T[lang];
+  document.getElementById('success-title').textContent = t.successTitle;
+  document.getElementById('success-sub').textContent = t.successSub;
+  document.getElementById('btn-next').textContent = t.btnNext;
+  document.getElementById('success-info').innerHTML = `
+    <div class="info-row"><span class="key">${t.kName}</span><span class="val">${rec.name}</span></div>
+    <div class="info-row"><span class="key">${t.kCompany}</span><span class="val">${rec.company}</span></div>
+    <div class="info-row"><span class="key">${t.kTime}</span><span class="val">${rec.date} ${rec.time}</span></div>
+    <div class="info-row"><span class="key">${t.kLang}</span><span class="val">${rec.lang === 'zh' ? '繁體中文' : 'English'}</span></div>
+  `;
+  showScreen('success');
+  startCountdown(10);
+}
+
+function startCountdown(secs) {
+  if (cdTimer) clearInterval(cdTimer);
+  let rem = secs;
+  document.getElementById('progress-fill').style.width = '100%';
+  updateCd(rem, secs);
+  cdTimer = setInterval(() => {
+    rem--;
+    updateCd(rem, secs);
+    if (rem <= 0) { clearInterval(cdTimer); cdTimer = null; resetKiosk(); }
+  }, 1000);
+}
+
+function updateCd(rem, total) {
+  document.getElementById('progress-fill').style.width = (rem/total*100) + '%';
+  const t = T[lang];
+  document.getElementById('countdown-txt').textContent = lang === 'zh' ? `${rem} ${t.cdPrefix}` : `${rem}${t.cdPrefix}`;
+}
+
+function resetKiosk() {
+  if (cdTimer) { clearInterval(cdTimer); cdTimer = null; }
+  showScreen('lang');
+}
+
+function checkLogin() {
+  if (document.getElementById('admin-pw').value === ADMIN_PW) {
+    document.getElementById('login-err').style.display = 'none';
+    document.getElementById('admin-pw').value = '';
+    renderAdmin();
+    showScreen('admin');
+  } else {
+    document.getElementById('login-err').style.display = 'block';
+  }
+}
+
+function renderAdmin() {
+  const recs = getRecords();
+  document.getElementById('rec-count').textContent = `共 ${recs.length} 筆簽署紀錄`;
+  const list = document.getElementById('records-list');
+  if (!recs.length) {
+    list.innerHTML = '<div class="empty-state"><i class="ti ti-file-off"></i><span>尚無簽署紀錄</span></div>';
+    return;
+  }
+  list.innerHTML = [...recs].reverse().map(r => `
+    <div class="rec-card">
+      <div class="rec-avatar">${r.name.slice(0,2).toUpperCase()}</div>
+      <div class="rec-info">
+        <div class="rec-name">${r.name}　${r.company}${r.jobtitle ? '　' + r.jobtitle : ''}</div>
+        <div class="rec-meta">${r.date} ${r.time}　${r.lang === 'zh' ? '中文' : 'EN'}${r.email ? '　' + r.email : ''}</div>
+      </div>
+      ${r.sig ? `<img class="rec-sig" src="${r.sig}" alt="sig">` : ''}
+    </div>`).join('');
+}
+
+function exportCSV() {
+  const recs = getRecords();
+  if (!recs.length) { toast('尚無資料'); return; }
+  const header = ['序號','日期','時間','姓名','公司','職稱','Email/電話','語言版本','時間戳記'];
+  const rows = recs.map((r,i) => [
+    i+1, r.date, r.time, r.name, r.company, r.jobtitle||'', r.email||'',
+    r.lang === 'zh' ? '繁體中文' : 'English', r.timestamp
+  ].map(v => `"${String(v).replace(/"/g,'""')}"`).join(','));
+  const csv = '\uFEFF' + [header.join(','), ...rows].join('\r\n');
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(new Blob([csv], {type:'text/csv;charset=utf-8;'}));
+  a.download = `AEWIN_NDA_COMPUTEX2026_${new Date().toISOString().slice(0,10)}.csv`;
+  a.click();
+  toast('CSV 匯出完成！');
+}
+
+function emailSummary() {
+  const recs = getRecords();
+  if (!recs.length) { toast('尚無資料可寄送'); return; }
+  const now = new Date().toLocaleString('zh-TW');
+  const subject = encodeURIComponent(`[AEWIN NDA] COMPUTEX 2026 簽署紀錄 — ${new Date().toLocaleDateString('zh-TW')} (共 ${recs.length} 筆)`);
+  const lines = recs.map((r,i) =>
+    `${i+1}. ${r.name} ／ ${r.company}${r.jobtitle ? ' ／ ' + r.jobtitle : ''}${r.email ? ' ／ ' + r.email : ''} ／ ${r.date} ${r.time} ／ ${r.lang === 'zh' ? '中文' : 'EN'}`
+  ).join('\n');
+  const body = encodeURIComponent(`Ming,\n\n以下是截至 ${now} 的 NDA 簽署摘要：\n\n總計：${recs.length} 人\n\n${lines}\n\n※ 完整簽名紀錄請至平板後台匯出 CSV。\n\nAEWIN NDA Kiosk 系統自動產生`);
+  window.location.href = `mailto:${ADMIN_EMAIL}?subject=${subject}&body=${body}`;
+  toast('已開啟郵件程式');
+}
+
+function toast(msg) {
+  const el = document.getElementById('toast');
+  el.textContent = msg; el.style.display = 'block';
+  setTimeout(() => el.style.display = 'none', 2600);
+}
+</script>
+</body>
+</html>
