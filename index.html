@@ -116,17 +116,17 @@
   #screen-admin { padding: 16px; gap: 12px; background: var(--bg); overflow-y: auto; }
   .admin-title { font-size: 20px; font-weight: 600; color: var(--blue); }
   .record-count { font-size: 15px; color: var(--text2); margin-top: 2px; }
-  .records-list { display: flex; flex-direction: column; gap: 8px; max-height: 360px; overflow-y: auto; }
-  .rec-card { border-radius: var(--r); border: 0.5px solid var(--border); background: var(--surface); }
+  .records-list { display: flex; flex-direction: column; gap: 10px; flex: 1; overflow-y: auto; min-height: 100px; }
+  .rec-card { border-radius: var(--r); border: 0.5px solid var(--border); background: var(--surface); display: block; }
 
   .rec-card { position: relative; overflow: hidden; }
-  .rec-card-inner { display: flex; align-items: center; gap: 14px; padding: 16px 16px; background: var(--surface); border-radius: var(--r); transition: transform 0.2s ease; width: 100%; }
+  .rec-card-inner { display: flex; align-items: center; gap: 14px; padding: 16px; background: var(--surface); border-radius: var(--r); width: 100%; box-sizing: border-box; }
   .rec-delete-bg { position: absolute; right: 0; top: 0; bottom: 0; width: 90px; background: #c0392b; display: flex; align-items: center; justify-content: center; border-radius: 0 var(--r) var(--r) 0; }
   .rec-delete-bg i { font-size: 26px; color: #fff; }
   .rec-card.swiped .rec-card-inner { transform: translateX(-90px); }
 
   .rec-avatar { width: 48px; height: 48px; border-radius: 50%; background: var(--info-bg); color: var(--info-text); display: flex; align-items: center; justify-content: center; font-size: 16px; font-weight: 600; flex-shrink: 0; }
-  .rec-info { flex: 1; min-width: 0; }
+  .rec-info { flex: 1; min-width: 0; overflow: hidden; }
   .rec-name { font-size: 17px; font-weight: 600; color: var(--text); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
   .rec-meta { font-size: 14px; color: var(--text2); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; margin-top: 3px; }
   .rec-sig { width: 80px; height: 40px; border-radius: 6px; border: 0.5px solid var(--border); background: var(--surface2); flex-shrink: 0; object-fit: contain; }
@@ -516,17 +516,15 @@ function renderAdmin() {
     return;
   }
   list.innerHTML = [...recs].reverse().map(r => `
-    <div class="rec-card" id="card-${r.id}">
-      <div class="rec-card-inner">
-        <div class="rec-avatar">${r.name.slice(0,2).toUpperCase()}</div>
-        <div class="rec-info">
-          <div class="rec-name">${r.name}　${r.company}${r.jobtitle?'　'+r.jobtitle:''}</div>
-          <div class="rec-meta">${r.date} ${r.time}　${r.lang==='zh'?'中文':'EN'}${r.email?'　'+r.email:''}${r.phone?'　'+r.phone:''}</div>
-        </div>
-        ${r.sig ? `<img class="rec-sig" src="${r.sig}" alt="sig">` : ''}
-        <button class="btn-icon" onclick="redownloadSig(${r.id})" title="重新下載簽名"><i class="ti ti-download"></i></button>
-        <button class="btn-delete" onclick="deleteRecord(${r.id})" title="刪除"><i class="ti ti-trash"></i></button>
+    <div style="display:flex;align-items:center;gap:14px;padding:16px;background:var(--surface);border-radius:10px;border:0.5px solid var(--border);box-sizing:border-box;" id="card-${r.id}">
+      <div style="width:48px;height:48px;border-radius:50%;background:var(--info-bg);color:var(--info-text);display:flex;align-items:center;justify-content:center;font-size:16px;font-weight:600;flex-shrink:0;">${r.name.slice(0,2).toUpperCase()}</div>
+      <div style="flex:1;min-width:0;overflow:hidden;">
+        <div style="font-size:17px;font-weight:600;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${r.name}　${r.company}${r.jobtitle?'　'+r.jobtitle:''}</div>
+        <div style="font-size:14px;color:var(--text2);margin-top:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${r.date} ${r.time}　${r.lang==='zh'?'中文':'EN'}${r.email?'　'+r.email:''}${r.phone?'　'+r.phone:''}</div>
       </div>
+      ${r.sig ? `<img src="${r.sig}" style="width:80px;height:40px;border-radius:6px;border:0.5px solid var(--border);object-fit:contain;flex-shrink:0;" alt="sig">` : ''}
+      <button onclick="redownloadSig(${r.id})" style="width:44px;height:44px;border-radius:8px;border:0.5px solid var(--border2);background:transparent;cursor:pointer;display:flex;align-items:center;justify-content:center;color:var(--text2);font-size:20px;flex-shrink:0;"><i class="ti ti-download"></i></button>
+      <button onclick="deleteRecord(${r.id})" style="width:44px;height:44px;border-radius:8px;border:none;background:#fde8e8;cursor:pointer;display:flex;align-items:center;justify-content:center;color:#c0392b;font-size:20px;flex-shrink:0;"><i class="ti ti-trash"></i></button>
     </div>`).join('');
 }
 
