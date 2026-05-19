@@ -571,6 +571,13 @@ function emailSummary() {
 
 
 
+
+function deleteRecord(id) {
+  let recs = getRecords().filter(r => r.id !== id);
+  localStorage.setItem('aewin_nda_v1', JSON.stringify(recs));
+  renderAdmin();
+  toast('已刪除');
+}
 function toast(msg) {
   const el = document.getElementById('toast');
   el.textContent = msg; el.style.display = 'block';
