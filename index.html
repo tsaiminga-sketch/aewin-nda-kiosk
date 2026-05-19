@@ -50,7 +50,7 @@
   #screen-nda { padding: 16px; gap: 12px; background: var(--bg); overflow-y: auto; }
   .row-between { display: flex; align-items: center; justify-content: space-between; flex-shrink: 0; }
   .nda-title { font-size: 16px; font-weight: 600; color: var(--blue); }
-  .tag { font-size: 11px; padding: 3px 10px; border-radius: 20px; font-weight: 500; }
+  .tag { font-size: 13px; padding: 5px 12px; border-radius: 20px; font-weight: 500; }
   .tag-blue { background: var(--info-bg); color: var(--info-text); }
   .tag-admin { background: var(--warn-bg); color: var(--warn-text); }
   .nda-scroll { flex: 1; min-height: 240px; max-height: 340px; overflow-y: auto; padding: 14px 16px; border: 0.5px solid var(--border); border-radius: var(--r); background: var(--surface); font-size: 13px; line-height: 1.8; color: var(--text); -webkit-overflow-scrolling: touch; }
@@ -84,7 +84,7 @@
   .btn-primary:disabled { background: var(--border); color: var(--text3); cursor: not-allowed; }
   .btn-ghost { background: transparent; color: var(--text2); border: 0.5px solid var(--border2); }
   .btn-ghost:hover { background: var(--surface2); }
-  .btn-sm { padding: 7px 14px; font-size: 13px; border-radius: 8px; }
+  .btn-sm { padding: 11px 18px; font-size: 15px; border-radius: 8px; }
   .btn-row { display: flex; gap: 10px; flex-shrink: 0; }
   .btn-row .btn-primary { flex: 1; }
   .sig-actions { display: flex; justify-content: flex-end; }
@@ -114,26 +114,28 @@
 
   /* Admin */
   #screen-admin { padding: 16px; gap: 12px; background: var(--bg); overflow-y: auto; }
-  .admin-title { font-size: 17px; font-weight: 600; color: var(--blue); }
-  .record-count { font-size: 13px; color: var(--text2); }
+  .admin-title { font-size: 20px; font-weight: 600; color: var(--blue); }
+  .record-count { font-size: 15px; color: var(--text2); margin-top: 2px; }
   .records-list { display: flex; flex-direction: column; gap: 8px; max-height: 360px; overflow-y: auto; }
-  .rec-card { border-radius: var(--r); border: 0.5px solid var(--border); position: relative; overflow: hidden; cursor: pointer; }
+  .rec-card { border-radius: var(--r); border: 0.5px solid var(--border); background: var(--surface); }
 
   .rec-card { position: relative; overflow: hidden; }
-  .rec-card-inner { display: flex; align-items: center; gap: 11px; padding: 11px 13px; background: var(--surface); border-radius: var(--r); transition: transform 0.2s ease; width: 100%; }
-  .rec-delete-bg { position: absolute; right: 0; top: 0; bottom: 0; width: 80px; background: #c0392b; display: flex; align-items: center; justify-content: center; border-radius: 0 var(--r) var(--r) 0; }
-  .rec-delete-bg i { font-size: 22px; color: #fff; }
-  .rec-card.swiped .rec-card-inner { transform: translateX(-80px); }
+  .rec-card-inner { display: flex; align-items: center; gap: 14px; padding: 16px 16px; background: var(--surface); border-radius: var(--r); transition: transform 0.2s ease; width: 100%; }
+  .rec-delete-bg { position: absolute; right: 0; top: 0; bottom: 0; width: 90px; background: #c0392b; display: flex; align-items: center; justify-content: center; border-radius: 0 var(--r) var(--r) 0; }
+  .rec-delete-bg i { font-size: 26px; color: #fff; }
+  .rec-card.swiped .rec-card-inner { transform: translateX(-90px); }
 
-  .rec-avatar { width: 38px; height: 38px; border-radius: 50%; background: var(--info-bg); color: var(--info-text); display: flex; align-items: center; justify-content: center; font-size: 13px; font-weight: 600; flex-shrink: 0; }
+  .rec-avatar { width: 48px; height: 48px; border-radius: 50%; background: var(--info-bg); color: var(--info-text); display: flex; align-items: center; justify-content: center; font-size: 16px; font-weight: 600; flex-shrink: 0; }
   .rec-info { flex: 1; min-width: 0; }
-  .rec-name { font-size: 14px; font-weight: 500; color: var(--text); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-  .rec-meta { font-size: 12px; color: var(--text2); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-  .rec-sig { width: 64px; height: 32px; border-radius: 6px; border: 0.5px solid var(--border); background: var(--surface2); flex-shrink: 0; object-fit: contain; }
-  .btn-icon { width: 32px; height: 32px; border-radius: 8px; border: 0.5px solid var(--border2); background: transparent; cursor: pointer; display: flex; align-items: center; justify-content: center; color: var(--text2); font-size: 16px; flex-shrink: 0; }
+  .rec-name { font-size: 17px; font-weight: 600; color: var(--text); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .rec-meta { font-size: 14px; color: var(--text2); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; margin-top: 3px; }
+  .rec-sig { width: 80px; height: 40px; border-radius: 6px; border: 0.5px solid var(--border); background: var(--surface2); flex-shrink: 0; object-fit: contain; }
+  .btn-icon { width: 42px; height: 42px; border-radius: 8px; border: 0.5px solid var(--border2); background: transparent; cursor: pointer; display: flex; align-items: center; justify-content: center; color: var(--text2); font-size: 20px; flex-shrink: 0; }
+  .btn-delete { width: 44px; height: 44px; border-radius: 8px; border: none; background: #fde8e8; cursor: pointer; display: flex; align-items: center; justify-content: center; color: #c0392b; font-size: 20px; flex-shrink: 0; }
+  .btn-delete:active { background: #c0392b; color: #fff; }
   .btn-icon:hover { background: var(--surface2); }
   .admin-actions { display: flex; gap: 8px; flex-wrap: wrap; flex-shrink: 0; }
-  .admin-footer { font-size: 11px; color: var(--text3); text-align: center; }
+  .admin-footer { font-size: 13px; color: var(--text3); text-align: center; }
   .empty-state { text-align: center; padding: 48px 20px; color: var(--text2); font-size: 14px; display: flex; flex-direction: column; align-items: center; gap: 10px; }
   .empty-state i { font-size: 32px; color: var(--text3); }
 
@@ -514,8 +516,7 @@ function renderAdmin() {
     return;
   }
   list.innerHTML = [...recs].reverse().map(r => `
-    <div class="rec-card" id="card-${r.id}" ontouchstart="swipeStart(event,${r.id})" ontouchmove="swipeMove(event,${r.id})" ontouchend="swipeEnd(event,${r.id})">
-      <div class="rec-delete-bg"><i class="ti ti-trash"></i></div>
+    <div class="rec-card" id="card-${r.id}">
       <div class="rec-card-inner">
         <div class="rec-avatar">${r.name.slice(0,2).toUpperCase()}</div>
         <div class="rec-info">
@@ -524,10 +525,9 @@ function renderAdmin() {
         </div>
         ${r.sig ? `<img class="rec-sig" src="${r.sig}" alt="sig">` : ''}
         <button class="btn-icon" onclick="redownloadSig(${r.id})" title="重新下載簽名"><i class="ti ti-download"></i></button>
+        <button class="btn-delete" onclick="deleteRecord(${r.id})" title="刪除"><i class="ti ti-trash"></i></button>
       </div>
     </div>`).join('');
-  // attach swipe for mouse too
-  addSwipeListeners();
 }
 
 function redownloadSig(id) {
@@ -572,61 +572,6 @@ function emailSummary() {
 }
 
 
-// ── Swipe to delete ──
-let swipeData = {};
-
-function swipeStart(e, id) {
-  const t = e.touches[0];
-  swipeData[id] = { startX: t.clientX, startY: t.clientY, moved: false };
-}
-
-function swipeMove(e, id) {
-  if (!swipeData[id]) return;
-  const t = e.touches[0];
-  const dx = t.clientX - swipeData[id].startX;
-  const dy = Math.abs(t.clientY - swipeData[id].startY);
-  if (dy > 20) { swipeData[id] = null; return; } // vertical scroll
-  if (dx < -10) {
-    swipeData[id].moved = true;
-    e.preventDefault();
-    const card = document.getElementById('card-' + id);
-    if (card) card.classList.add('swiped');
-  }
-}
-
-function swipeEnd(e, id) {
-  if (!swipeData[id] || !swipeData[id].moved) { swipeData[id] = null; return; }
-  swipeData[id] = null;
-  // already swiped open - tap on delete bg to confirm
-  const card = document.getElementById('card-' + id);
-  if (card) {
-    card.querySelector('.rec-delete-bg').onclick = () => deleteRecord(id);
-  }
-}
-
-function addSwipeListeners() {
-  // Also allow clicking the red area to delete (for mouse/desktop)
-  document.querySelectorAll('.rec-delete-bg').forEach(el => {
-    const card = el.closest('.rec-card');
-    const id = parseInt(card.id.replace('card-',''));
-    el.onclick = () => { if (card.classList.contains('swiped')) deleteRecord(id); };
-  });
-  // tap elsewhere to close swiped card
-  document.getElementById('records-list').onclick = (e) => {
-    const card = e.target.closest('.rec-card');
-    document.querySelectorAll('.rec-card.swiped').forEach(c => {
-      if (c !== card) c.classList.remove('swiped');
-    });
-  };
-}
-
-function deleteRecord(id) {
-  if (!confirm('確定要刪除這筆紀錄？')) return;
-  let recs = getRecords().filter(r => r.id !== id);
-  localStorage.setItem('aewin_nda_v1', JSON.stringify(recs));
-  renderAdmin();
-  toast('已刪除');
-}
 
 function toast(msg) {
   const el = document.getElementById('toast');
