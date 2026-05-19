@@ -117,7 +117,14 @@
   .admin-title { font-size: 17px; font-weight: 600; color: var(--blue); }
   .record-count { font-size: 13px; color: var(--text2); }
   .records-list { display: flex; flex-direction: column; gap: 8px; max-height: 360px; overflow-y: auto; }
-  .rec-card { padding: 11px 13px; border-radius: var(--r); border: 0.5px solid var(--border); background: var(--surface); display: flex; align-items: center; gap: 11px; }
+  .rec-card { border-radius: var(--r); border: 0.5px solid var(--border); position: relative; overflow: hidden; cursor: pointer; }
+
+  .rec-card { position: relative; overflow: hidden; }
+  .rec-card-inner { display: flex; align-items: center; gap: 11px; padding: 11px 13px; background: var(--surface); border-radius: var(--r); transition: transform 0.2s ease; width: 100%; }
+  .rec-delete-bg { position: absolute; right: 0; top: 0; bottom: 0; width: 80px; background: #c0392b; display: flex; align-items: center; justify-content: center; border-radius: 0 var(--r) var(--r) 0; }
+  .rec-delete-bg i { font-size: 22px; color: #fff; }
+  .rec-card.swiped .rec-card-inner { transform: translateX(-80px); }
+
   .rec-avatar { width: 38px; height: 38px; border-radius: 50%; background: var(--info-bg); color: var(--info-text); display: flex; align-items: center; justify-content: center; font-size: 13px; font-weight: 600; flex-shrink: 0; }
   .rec-info { flex: 1; min-width: 0; }
   .rec-name { font-size: 14px; font-weight: 500; color: var(--text); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
@@ -507,15 +514,20 @@ function renderAdmin() {
     return;
   }
   list.innerHTML = [...recs].reverse().map(r => `
-    <div class="rec-card">
-      <div class="rec-avatar">${r.name.slice(0,2).toUpperCase()}</div>
-      <div class="rec-info">
-        <div class="rec-name">${r.name}　${r.company}${r.jobtitle?'　'+r.jobtitle:''}</div>
-        <div class="rec-meta">${r.date} ${r.time}　${r.lang==='zh'?'中文':'EN'}${r.email?'　'+r.email:''}${r.phone?'　'+r.phone:''}</div>
+    <div class="rec-card" id="card-${r.id}" ontouchstart="swipeStart(event,${r.id})" ontouchmove="swipeMove(event,${r.id})" ontouchend="swipeEnd(event,${r.id})">
+      <div class="rec-delete-bg"><i class="ti ti-trash"></i></div>
+      <div class="rec-card-inner">
+        <div class="rec-avatar">${r.name.slice(0,2).toUpperCase()}</div>
+        <div class="rec-info">
+          <div class="rec-name">${r.name}　${r.company}${r.jobtitle?'　'+r.jobtitle:''}</div>
+          <div class="rec-meta">${r.date} ${r.time}　${r.lang==='zh'?'中文':'EN'}${r.email?'　'+r.email:''}${r.phone?'　'+r.phone:''}</div>
+        </div>
+        ${r.sig ? `<img class="rec-sig" src="${r.sig}" alt="sig">` : ''}
+        <button class="btn-icon" onclick="redownloadSig(${r.id})" title="重新下載簽名"><i class="ti ti-download"></i></button>
       </div>
-      ${r.sig ? `<img class="rec-sig" src="${r.sig}" alt="sig">` : ''}
-      <button class="btn-icon" onclick="redownloadSig(${r.id})" title="重新下載簽名"><i class="ti ti-download"></i></button>
     </div>`).join('');
+  // attach swipe for mouse too
+  addSwipeListeners();
 }
 
 function redownloadSig(id) {
@@ -557,6 +569,63 @@ function emailSummary() {
   const body = encodeURIComponent(`Ming,\n\n以下是截至 ${now} 的 NDA 簽署摘要：\n\n總計：${recs.length} 人\n\n${lines}\n\n※ 簽名圖片請至平板後台「下載全部簽名」取得。\n\nAEWIN NDA Kiosk 系統自動產生`);
   window.location.href = `mailto:${ADMIN_EMAIL}?subject=${subject}&body=${body}`;
   toast('已開啟郵件程式');
+}
+
+
+// ── Swipe to delete ──
+let swipeData = {};
+
+function swipeStart(e, id) {
+  const t = e.touches[0];
+  swipeData[id] = { startX: t.clientX, startY: t.clientY, moved: false };
+}
+
+function swipeMove(e, id) {
+  if (!swipeData[id]) return;
+  const t = e.touches[0];
+  const dx = t.clientX - swipeData[id].startX;
+  const dy = Math.abs(t.clientY - swipeData[id].startY);
+  if (dy > 20) { swipeData[id] = null; return; } // vertical scroll
+  if (dx < -10) {
+    swipeData[id].moved = true;
+    e.preventDefault();
+    const card = document.getElementById('card-' + id);
+    if (card) card.classList.add('swiped');
+  }
+}
+
+function swipeEnd(e, id) {
+  if (!swipeData[id] || !swipeData[id].moved) { swipeData[id] = null; return; }
+  swipeData[id] = null;
+  // already swiped open - tap on delete bg to confirm
+  const card = document.getElementById('card-' + id);
+  if (card) {
+    card.querySelector('.rec-delete-bg').onclick = () => deleteRecord(id);
+  }
+}
+
+function addSwipeListeners() {
+  // Also allow clicking the red area to delete (for mouse/desktop)
+  document.querySelectorAll('.rec-delete-bg').forEach(el => {
+    const card = el.closest('.rec-card');
+    const id = parseInt(card.id.replace('card-',''));
+    el.onclick = () => { if (card.classList.contains('swiped')) deleteRecord(id); };
+  });
+  // tap elsewhere to close swiped card
+  document.getElementById('records-list').onclick = (e) => {
+    const card = e.target.closest('.rec-card');
+    document.querySelectorAll('.rec-card.swiped').forEach(c => {
+      if (c !== card) c.classList.remove('swiped');
+    });
+  };
+}
+
+function deleteRecord(id) {
+  if (!confirm('確定要刪除這筆紀錄？')) return;
+  let recs = getRecords().filter(r => r.id !== id);
+  localStorage.setItem('aewin_nda_v1', JSON.stringify(recs));
+  renderAdmin();
+  toast('已刪除');
 }
 
 function toast(msg) {
