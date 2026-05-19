@@ -182,7 +182,8 @@
       <div class="form-group"><label id="lbl-name">姓名 *</label><input type="text" id="inp-name" autocomplete="off" autocorrect="off" spellcheck="false"></div>
       <div class="form-group"><label id="lbl-company">公司名稱 *</label><input type="text" id="inp-company" autocomplete="off" autocorrect="off" spellcheck="false"></div>
       <div class="form-group"><label id="lbl-title">職稱</label><input type="text" id="inp-jobtitle" autocomplete="off" spellcheck="false"></div>
-      <div class="form-group"><label id="lbl-email">Email / 電話</label><input type="text" id="inp-email" autocomplete="off" autocorrect="off" spellcheck="false"></div>
+      <div class="form-group"><label id="lbl-email">Email</label><input type="email" id="inp-email" autocomplete="off" autocorrect="off" spellcheck="false" inputmode="email"></div>
+      <div class="form-group"><label id="lbl-phone">電話 / Phone</label><input type="tel" id="inp-phone" autocomplete="off" spellcheck="false" inputmode="tel"></div>
     </div>
     <div class="sig-section">
       <div class="sig-label" id="lbl-sig">手寫簽名 *</div>
@@ -259,13 +260,13 @@ const T = {
     agreeLabel:'我已閱讀並同意以上所有條款',
     btnToForm:'繼續填寫資料 →', btnBackNda:'返回語言選擇',
     formHeader:'訪客資料 & 簽名',
-    lName:'姓名 *', lCompany:'公司名稱 *', lTitle:'職稱', lEmail:'Email / 電話',
+    lName:'姓名 *', lCompany:'公司名稱 *', lTitle:'職稱', lEmail:'Email', lPhone:'電話',
     lSig:'手寫簽名 *', btnClear:'清除簽名', btnSubmit:'確認送出並簽署',
     scrollHint:'↓ 請向下捲動閱讀完整條款',
     successTitle:'簽署完成！', successSub:'感謝您的配合。歡迎進入 AEWIN 非公開產品展示室。',
     btnNext:'下一位訪客', sigDownloaded:'簽名 JPG 已下載',
     errName:'請填寫姓名', errCompany:'請填寫公司名稱', errSig:'請完成手寫簽名',
-    ph:['姓名','公司名稱','職稱','email@company.com'], sigPh:'在此手寫簽名 / Sign here',
+    ph:['姓名','公司名稱','職稱','email@company.com','電話'], sigPh:'在此手寫簽名 / Sign here',
     cdTxt: (n) => `${n} 秒後自動返回`,
     kName:'姓名', kCompany:'公司', kTime:'簽署時間', kLang:'語言版本',
   },
@@ -274,13 +275,13 @@ const T = {
     agreeLabel:'I have read and agree to all terms above',
     btnToForm:'Continue to Sign →', btnBackNda:'Back to language',
     formHeader:'Visitor Information & Signature',
-    lName:'Name *', lCompany:'Company *', lTitle:'Title', lEmail:'Email / Phone',
+    lName:'Name *', lCompany:'Company *', lTitle:'Title', lEmail:'Email', lPhone:'Phone',
     lSig:'Handwritten Signature *', btnClear:'Clear', btnSubmit:'Confirm & Sign',
     scrollHint:'↓ Scroll down to read full agreement',
     successTitle:'Signed Successfully!', successSub:'Thank you. You are now permitted to enter the AEWIN Private Product Demo Room.',
     btnNext:'Next Visitor', sigDownloaded:'Signature JPG downloaded',
     errName:'Please enter your name', errCompany:'Please enter your company', errSig:'Please provide your signature',
-    ph:['Full Name','Company','Title','email@company.com'], sigPh:'Sign here',
+    ph:['Full Name','Company','Title','email@company.com','Phone'], sigPh:'Sign here',
     cdTxt: (n) => `${n}s — returning automatically`,
     kName:'Name', kCompany:'Company', kTime:'Signed at', kLang:'Language',
   }
@@ -342,6 +343,7 @@ function selectLang(l) {
   document.getElementById('lbl-company').textContent = t.lCompany;
   document.getElementById('lbl-title').textContent = t.lTitle;
   document.getElementById('lbl-email').textContent = t.lEmail;
+  document.getElementById('lbl-phone').textContent = t.lPhone || (lang==='zh'?'電話':'Phone');
   document.getElementById('lbl-sig').textContent = t.lSig;
   document.getElementById('btn-clear').textContent = t.btnClear;
   document.getElementById('btn-submit-txt').textContent = t.btnSubmit;
@@ -350,6 +352,7 @@ function selectLang(l) {
   document.getElementById('inp-company').placeholder = t.ph[1];
   document.getElementById('inp-jobtitle').placeholder = t.ph[2];
   document.getElementById('inp-email').placeholder = t.ph[3];
+  document.getElementById('inp-phone').placeholder = t.ph[4];
   document.getElementById('sig-ph').textContent = t.sigPh;
   document.getElementById('btn-next').textContent = t.btnNext;
   document.getElementById('agree-check').checked = false;
@@ -364,7 +367,7 @@ function toggleAgree() {
 }
 
 function goToForm() {
-  ['inp-name','inp-company','inp-jobtitle','inp-email'].forEach(id => document.getElementById(id).value = '');
+  ['inp-name','inp-company','inp-jobtitle','inp-email','inp-phone'].forEach(id => document.getElementById(id).value = '');
   showScreen('form');
   setTimeout(initCanvas, 80);
 }
@@ -417,7 +420,7 @@ function buildSigJPG(rec) {
   ctx.fillText(`${rec.name}  ·  ${rec.company}${rec.jobtitle ? '  ·  ' + rec.jobtitle : ''}`, 10, srcCanvas.height + 17);
   ctx.font = '11px -apple-system, sans-serif';
   ctx.fillStyle = 'rgba(255,255,255,0.75)';
-  ctx.fillText(`${rec.date} ${rec.time}  ·  AEWIN COMPUTEX 2026 NDA`, 10, srcCanvas.height + 36);
+  ctx.fillText(`${rec.date} ${rec.time}  ·  ${rec.email||''}${rec.phone?' / '+rec.phone:''}  ·  AEWIN COMPUTEX 2026 NDA`, 10, srcCanvas.height + 36);
   return tmp.toDataURL('image/jpeg', 0.95);
 }
 
@@ -443,6 +446,7 @@ function submitForm() {
     name, company,
     jobtitle: document.getElementById('inp-jobtitle').value.trim(),
     email: document.getElementById('inp-email').value.trim(),
+    phone: document.getElementById('inp-phone').value.trim(),
     lang,
     sig: document.getElementById('sig-canvas').toDataURL('image/png')
   };
@@ -458,7 +462,6 @@ function showSuccess(rec) {
   document.getElementById('success-title').textContent = t.successTitle;
   document.getElementById('success-sub').textContent = t.successSub;
   document.getElementById('btn-next').textContent = t.btnNext;
-  document.getElementById('sig-status-txt').textContent = t.sigDownloaded;
   document.getElementById('success-info').innerHTML = `
     <div class="info-row"><span class="key">${t.kName}</span><span class="val">${rec.name}</span></div>
     <div class="info-row"><span class="key">${t.kCompany}</span><span class="val">${rec.company}</span></div>
@@ -508,7 +511,7 @@ function renderAdmin() {
       <div class="rec-avatar">${r.name.slice(0,2).toUpperCase()}</div>
       <div class="rec-info">
         <div class="rec-name">${r.name}　${r.company}${r.jobtitle?'　'+r.jobtitle:''}</div>
-        <div class="rec-meta">${r.date} ${r.time}　${r.lang==='zh'?'中文':'EN'}${r.email?'　'+r.email:''}</div>
+        <div class="rec-meta">${r.date} ${r.time}　${r.lang==='zh'?'中文':'EN'}${r.email?'　'+r.email:''}${r.phone?'　'+r.phone:''}</div>
       </div>
       ${r.sig ? `<img class="rec-sig" src="${r.sig}" alt="sig">` : ''}
       <button class="btn-icon" onclick="redownloadSig(${r.id})" title="重新下載簽名"><i class="ti ti-download"></i></button>
@@ -535,8 +538,8 @@ function downloadAllSigs() {
 function exportCSV() {
   const recs = getRecords();
   if (!recs.length) { toast('尚無資料'); return; }
-  const header = ['序號','日期','時間','姓名','公司','職稱','Email/電話','語言版本','時間戳記'];
-  const rows = recs.map((r,i) => [i+1,r.date,r.time,r.name,r.company,r.jobtitle||'',r.email||'',r.lang==='zh'?'繁體中文':'English',r.timestamp].map(v=>`"${String(v).replace(/"/g,'""')}"`).join(','));
+  const header = ['序號','日期','時間','姓名','公司','職稱','Email','電話','語言版本','時間戳記'];
+  const rows = recs.map((r,i) => [i+1,r.date,r.time,r.name,r.company,r.jobtitle||'',r.email||'',r.phone||'',r.lang==='zh'?'繁體中文':'English',r.timestamp].map(v=>`"${String(v).replace(/"/g,'""')}"`).join(','));
   const csv = '\uFEFF' + [header.join(','), ...rows].join('\r\n');
   const a = document.createElement('a');
   a.href = URL.createObjectURL(new Blob([csv], {type:'text/csv;charset=utf-8;'}));
